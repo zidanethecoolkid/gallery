@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>gallery.zip</title>
+<link rel="icon" href="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773080620/ss2_xa7deu.png" type="image/png">
+<meta property="og:title" content="gallery.zip">
+<meta property="og:description" content="photography & videography portfolio">
+<meta property="og:image" content="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773080986/sdsdd_uddl5z.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="gallery.zip">
+<meta name="twitter:description" content="photography & videography portfolio">
+<meta name="twitter:image" content="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773080986/sdsdd_uddl5z.png">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #000;
+    overflow: hidden;
+    width: 100vw; height: 100vh; height: 100dvh;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Geneva, sans-serif;
+    font-size: 11px;
+    user-select: none; -webkit-user-select: none;
+    cursor: default;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 99999;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode: multiply;
+  }
+  .desktop {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 40px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 60px;
+    z-index: 1;
+  }
+  @media (max-width: 768px) {
+    .desktop { flex-direction: column; gap: 40px; }
+  }
+  .desktop-icon {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px; padding: 12px;
+    cursor: default;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s;
+  }
+  .desktop-icon:active { transform: scale(0.95); }
+  .desktop-icon .icon-wrap { padding: 4px; }
+  .desktop-icon:hover .icon-wrap,
+  .desktop-icon:hover .icon-label { background: rgba(0,0,128,0.7); }
+  .desktop-icon .icon-label {
+    color: white; text-align: center; line-height: 18px;
+    padding: 3px 8px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+    white-space: nowrap; font-size: 13px; font-weight: bold;
+    letter-spacing: 0.3px;
+  }
+  .win-btn {
+    background: #c0c0c0; border: none;
+    border-top: 1px solid #fff; border-left: 1px solid #fff;
+    border-right: 1px solid #404040; border-bottom: 1px solid #404040;
+    padding: 1px; cursor: pointer;
+    min-width: 16px; min-height: 14px;
+    display: flex; align-items: center; justify-content: center;
+    outline: none; font-size: 10px; line-height: 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .win-btn:active {
+    border-top: 1px solid #404040; border-left: 1px solid #404040;
+    border-right: 1px solid #fff; border-bottom: 1px solid #fff;
+  }
+  .taskbar {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 40px;
+    background: #c0c0c0; border-top: 2px solid #dfdfdf;
+    display: flex; align-items: center; padding: 2px; gap: 2px; z-index: 9998;
+  }
+  .start-btn {
+    font-weight: bold; padding: 2px 10px; height: 32px; font-size: 12px;
+    display: flex; align-items: center; gap: 4px; font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .taskbar-divider { width: 1px; height: 28px; border-left: 1px solid #808080; border-right: 1px solid #dfdfdf; margin: 0 2px; }
+  .taskbar-items { flex: 1; display: flex; gap: 2px; overflow: hidden; }
+  .systray {
+    border-top: 1px solid #808080; border-left: 1px solid #808080;
+    border-right: 1px solid #dfdfdf; border-bottom: 1px solid #dfdfdf;
+    padding: 2px 8px; height: 32px;
+    display: flex; align-items: center; gap: 6px; font-size: 11px;
+  }
+  .start-menu {
+    position: fixed; bottom: 40px; left: 0; width: 220px;
+    background: #c0c0c0;
+    border-top: 2px solid #dfdfdf; border-left: 2px solid #dfdfdf;
+    border-right: 2px solid #404040; border-bottom: 2px solid #404040;
+    z-index: 10000; display: none;
+    box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
+  }
+  .start-menu.open { display: block; }
+  .start-menu .sidebar {
+    background: #000080; width: 22px;
+    position: absolute; left: 2px; top: 2px; bottom: 2px;
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px;
+  }
+  .start-menu .sidebar span {
+    color: #c0c0c0; font-size: 14px; font-weight: bold;
+    writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: 2px;
+  }
+  .start-menu .menu-items { margin-left: 24px; padding: 2px 0; }
+  .start-menu .menu-item {
+    padding: 8px; display: flex; align-items: center; gap: 8px; font-size: 11px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .start-menu .menu-item:hover, .start-menu .menu-item:active { background: #000080; color: white; }
+  .start-menu .menu-sep { border-top: 1px solid #808080; border-bottom: 1px solid #dfdfdf; margin: 2px 4px; }
+</style>
+</head>
+<body>
+
+<!-- =====================================================
+     CHANGE THESE URLs TO YOUR DEPLOYED SITES
+     ===================================================== -->
+<script>
+var PHOTOGRAPHY_URL = "https://your-photography-site.vercel.app";
+var VIDEOGRAPHY_URL = "https://your-videography-site.vercel.app";
+</script>
+
+<!-- BACKGROUND VIDEO -->
+<video id="bgVideoDesktop" autoplay muted loop playsinline webkit-playsinline style="position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;object-fit:cover;z-index:0;pointer-events:none;">
+  <source src="https://res.cloudinary.com/dbuxi5yul/video/upload/v1773077298/OUTPUT_24_qus5lz.mp4" type="video/mp4">
+</video>
+<video id="bgVideoMobile" autoplay muted loop playsinline webkit-playsinline style="position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;object-fit:cover;z-index:0;pointer-events:none;display:none;">
+  <source src="https://res.cloudinary.com/dbuxi5yul/video/upload/v1773078239/OUTPUT_25_pf2lsa.mp4" type="video/mp4">
+</video>
+<script>
+(function(){
+  var desk = document.getElementById('bgVideoDesktop');
+  var mob = document.getElementById('bgVideoMobile');
+  function pickBg() {
+    if (window.innerWidth <= 768) {
+      desk.style.display = 'none'; desk.pause();
+      mob.style.display = 'block'; mob.play().catch(function(){});
+    } else {
+      mob.style.display = 'none'; mob.pause();
+      desk.style.display = 'block'; desk.play().catch(function(){});
+    }
+  }
+  pickBg();
+  window.addEventListener('resize', pickBg);
+})();
+</script>
+
+<div class="desktop">
+  <div class="desktop-icon" ondblclick="window.location.href=PHOTOGRAPHY_URL" ontouchend="event.preventDefault();window.location.href=PHOTOGRAPHY_URL">
+    <div class="icon-wrap">
+      <svg width="56" height="56" viewBox="0 0 32 32" fill="none"><rect x="4" y="4" width="24" height="24" fill="white" stroke="#808080"/><rect x="6" y="6" width="20" height="16" fill="#000080"/><circle cx="12" cy="12" r="3" fill="#FFFF00"/><path d="M6 22L12 16L16 19L22 13L26 18V22H6Z" fill="#008000"/></svg>
+    </div>
+    <div class="icon-label">photography.zip</div>
+  </div>
+
+  <div class="desktop-icon" ondblclick="window.location.href=VIDEOGRAPHY_URL" ontouchend="event.preventDefault();window.location.href=VIDEOGRAPHY_URL">
+    <div class="icon-wrap">
+      <svg width="56" height="56" viewBox="0 0 32 32" fill="none"><rect x="3" y="6" width="26" height="20" rx="1" fill="#c0c0c0" stroke="#404040"/><rect x="5" y="8" width="22" height="14" fill="#000080"/><polygon points="14,11 14,19 21,15" fill="white"/><rect x="5" y="23" width="22" height="2" fill="#808080"/></svg>
+    </div>
+    <div class="icon-label">videography.zip</div>
+  </div>
+</div>
+
+<div id="start-menu" class="start-menu">
+  <div class="sidebar"><span>gallery</span></div>
+  <div class="menu-items">
+    <div class="menu-item" onclick="window.location.href=PHOTOGRAPHY_URL;closeStart();">📸 photography.zip</div>
+    <div class="menu-item" onclick="window.location.href=VIDEOGRAPHY_URL;closeStart();">🎬 videography.zip</div>
+    <div class="menu-sep"></div>
+    <div class="menu-item" onclick="window.open('https://instagram.com/ziduflicks', '_blank');closeStart();">📸 Socials</div>
+    <div class="menu-sep"></div>
+    <div class="menu-item">🔌 Shut Down...</div>
+  </div>
+</div>
+
+<div class="taskbar">
+  <button class="win-btn start-btn" id="startBtn" onclick="toggleStart()">
+    <svg width="16" height="16" viewBox="0 0 16 16">
+      <rect x="1" y="1" width="6" height="6" fill="#FF0000"/>
+      <rect x="9" y="1" width="6" height="6" fill="#00FF00"/>
+      <rect x="1" y="9" width="6" height="6" fill="#0000FF"/>
+      <rect x="9" y="9" width="6" height="6" fill="#FFFF00"/>
+    </svg>
+    gallery.zip
+  </button>
+  <div class="taskbar-divider"></div>
+  <div class="taskbar-items"></div>
+  <div class="systray">🔊 <span id="clock"></span></div>
+</div>
+
+<script>
+var startOpen = false;
+function toggleStart() { startOpen = !startOpen; document.getElementById('start-menu').classList.toggle('open', startOpen); }
+function closeStart() { startOpen = false; document.getElementById('start-menu').classList.remove('open'); }
+document.body.addEventListener('mousedown', function(e) {
+  if (!e.target.closest('.start-menu') && !e.target.closest('#startBtn')) closeStart();
+});
+function updateClock() {
+  var now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+updateClock(); setInterval(updateClock, 30000);
+document.addEventListener('click', function playOnce() {
+  var d = document.getElementById('bgVideoDesktop');
+  var m = document.getElementById('bgVideoMobile');
+  if (d) d.play().catch(function(){});
+  if (m) m.play().catch(function(){});
+  document.removeEventListener('click', playOnce);
+});
+</script>
+</body>
+</html>

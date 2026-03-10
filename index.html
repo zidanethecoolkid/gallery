@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>gallery.zip</title>
-<link rel="icon" href="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773080620/ss2_xa7deu.png" type="image/png">
+<link rel="icon" href="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773174770/icons_skvdhc.png" type="image/png">
 <meta property="og:title" content="gallery.zip">
 <meta property="og:description" content="photography & videography portfolio">
-<meta property="og:image" content="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773080986/sdsdd_uddl5z.png">
+<meta property="og:image" content="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773174459/OUTPUT_00257_keajzd.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="gallery.zip">
 <meta name="twitter:description" content="photography & videography portfolio">
-<meta name="twitter:image" content="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773080986/sdsdd_uddl5z.png">
+<meta name="twitter:image" content="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773174459/OUTPUT_00257_keajzd.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -35,7 +35,7 @@
     position: fixed; top: 0; left: 0; right: 0; bottom: 40px;
     display: flex; align-items: center; justify-content: center;
     gap: 60px;
-    z-index: 1;
+    z-index: 2;
   }
   @media (max-width: 768px) {
     .desktop { flex-direction: column; gap: 40px; }
@@ -127,6 +127,24 @@ var PHOTOGRAPHY_URL = "https://photography.zip";
 var VIDEOGRAPHY_URL = "https://videography.zip";
 </script>
 
+<video id="bgVideoDesktop" autoplay muted loop playsinline webkit-playsinline style="position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;object-fit:cover;z-index:0;pointer-events:none;">
+  <source src="https://res.cloudinary.com/dbuxi5yul/video/upload/v1773180640/OUTPUT_27_atwggi.mp4" type="video/mp4">
+</video>
+<video id="bgVideoMobile" autoplay muted loop playsinline webkit-playsinline style="position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;object-fit:cover;z-index:0;pointer-events:none;display:none;">
+  <source src="https://res.cloudinary.com/dbuxi5yul/video/upload/v1773180639/OUTPUT_26_vjzo0l.mp4" type="video/mp4">
+</video>
+<script>
+(function(){
+  var desk = document.getElementById('bgVideoDesktop');
+  var mob = document.getElementById('bgVideoMobile');
+  function pickBg() {
+    if (window.innerWidth <= 768) { desk.style.display='none'; desk.pause(); mob.style.display='block'; mob.play().catch(function(){}); }
+    else { mob.style.display='none'; mob.pause(); desk.style.display='block'; desk.play().catch(function(){}); }
+  }
+  pickBg(); window.addEventListener('resize', pickBg);
+})();
+</script>
+
 <div class="desktop">
   <div class="desktop-icon" ondblclick="window.location.href=PHOTOGRAPHY_URL" ontouchend="event.preventDefault();window.location.href=PHOTOGRAPHY_URL">
     <div class="icon-wrap">
@@ -149,7 +167,11 @@ var VIDEOGRAPHY_URL = "https://videography.zip";
     <div class="menu-item" onclick="window.location.href=PHOTOGRAPHY_URL;closeStart();">📸 photography.zip</div>
     <div class="menu-item" onclick="window.location.href=VIDEOGRAPHY_URL;closeStart();">🎬 videography.zip</div>
     <div class="menu-sep"></div>
-    <div class="menu-item" onclick="window.open('https://instagram.com/ziduflicks', '_blank');closeStart();">📸 Socials</div>
+    <div class="menu-item" onclick="toggleSocials()">📸 Socials ▸</div>
+    <div id="socialsSubmenu" style="display:none;">
+      <div class="menu-item" style="padding-left:24px" onclick="window.open('https://instagram.com/ziduflicks', '_blank');closeStart();">📸 @ziduflicks</div>
+      <div class="menu-item" style="padding-left:24px" onclick="window.open('https://instagram.com/zidufilm', '_blank');closeStart();">📸 @zidufilm</div>
+    </div>
     <div class="menu-sep"></div>
     <div class="menu-item">🔌 Shut Down...</div>
   </div>
@@ -172,8 +194,9 @@ var VIDEOGRAPHY_URL = "https://videography.zip";
 
 <script>
 var startOpen = false;
-function toggleStart() { startOpen = !startOpen; document.getElementById('start-menu').classList.toggle('open', startOpen); }
-function closeStart() { startOpen = false; document.getElementById('start-menu').classList.remove('open'); }
+function toggleStart() { startOpen = !startOpen; document.getElementById('start-menu').classList.toggle('open', startOpen); if (!startOpen) { var ss = document.getElementById('socialsSubmenu'); if (ss) ss.style.display = 'none'; } }
+function toggleSocials() { var ss = document.getElementById('socialsSubmenu'); ss.style.display = ss.style.display === 'none' ? 'block' : 'none'; }
+function closeStart() { startOpen = false; document.getElementById('start-menu').classList.remove('open'); var ss = document.getElementById('socialsSubmenu'); if (ss) ss.style.display = 'none'; }
 document.body.addEventListener('mousedown', function(e) {
   if (!e.target.closest('.start-menu') && !e.target.closest('#startBtn')) closeStart();
 });
@@ -182,6 +205,13 @@ function updateClock() {
   document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 updateClock(); setInterval(updateClock, 30000);
+document.addEventListener('click', function playOnce() {
+  var d = document.getElementById('bgVideoDesktop');
+  var m = document.getElementById('bgVideoMobile');
+  if (d) d.play().catch(function(){});
+  if (m) m.play().catch(function(){});
+  document.removeEventListener('click', playOnce);
+});
 </script>
 </body>
 </html>

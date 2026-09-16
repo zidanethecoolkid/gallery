@@ -105,7 +105,11 @@
   }
   /* --- Scrapbook BOOK (page-flip) --- */
   .scrapbook-win .book-ind { color:#e7ecff; font-size:11px; margin:0 6px; white-space:nowrap; flex-shrink:0; }
-  .book-surface { flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:14px 8px; background:#2c2216; background-image:radial-gradient(circle at 50% 28%, #5a4832, #211910); overflow:hidden; position:relative; }
+  .scrapbook-win { background:transparent !important; border:none !important; box-shadow:none !important; left:0 !important; top:0 !important; width:100vw !important; height:calc(100dvh - 40px) !important; }
+  .book-surface { flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; background:transparent; }
+  .book { transform-origin:center center; }
+  .book-close { position:absolute; top:14px; right:16px; z-index:8; width:34px; height:34px; border-radius:50%; background:rgba(30,22,14,.5); color:#fff; border:1px solid rgba(255,255,255,.35); font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.4); -webkit-tap-highlight-color:transparent; }
+  .book-close:active { background:rgba(30,22,14,.78); }
   .book { display:flex; box-shadow:0 22px 46px rgba(0,0,0,.55); border-radius:8px; }
   .book-page { width:320px; height:452px; background:#faf6ea; background-image:radial-gradient(rgba(150,138,110,.5) 1.1px, transparent 1.5px); background-size:22px 22px; background-position:9px 11px; position:relative; overflow:hidden; padding:16px 15px 26px; }
   .book-page.left { border-radius:7px 0 0 7px; box-shadow:inset -22px 0 30px -20px rgba(80,55,20,.55); }
@@ -119,8 +123,10 @@
   .page-num { position:absolute; bottom:7px; font-family:'Caveat',cursive; font-size:14px; color:#9a8a68; }
   .book-page.left .page-num { left:16px; }
   .book-page.right .page-num, .book-page.only .page-num { right:16px; }
-  .flip { flex-shrink:0; width:38px; height:72px; background:rgba(250,246,234,.92); border:1px solid #b7a988; border-radius:6px; color:#4a3a22; font-size:26px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 8px rgba(0,0,0,.4); -webkit-tap-highlight-color:transparent; }
-  .flip:active { transform:scale(.93); }
+  .flip { position:absolute; top:50%; transform:translateY(-50%); z-index:6; width:40px; height:76px; background:rgba(250,246,234,.94); border:1px solid #b7a988; border-radius:7px; color:#4a3a22; font-size:26px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,.5); -webkit-tap-highlight-color:transparent; }
+  .flip.prev { left:14px; }
+  .flip.next { right:14px; }
+  .flip:active { filter:brightness(.9); }
   .book-cover { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; position:relative; }
   .book-cover .big { font-family:'Caveat',cursive; font-weight:700; font-size:58px; color:#36271a; line-height:.9; }
   .book-cover .cover-sub { font-family:'Caveat',cursive; font-size:21px; color:#6a5a3e; margin-top:16px; }
@@ -1381,7 +1387,7 @@ function renderScrapPage(page, pageNum) {
   if (!page) return '';
   var inner = '';
   if (page.kind === 'cover') {
-    inner = '<div class="book-cover"><div class="cover-tape"></div><div class="big">scrap<br>book</div><div class="cover-sub">&#10047; a lil bit of everything &#10047;</div><div class="cover-hint">flip the page &#8594;</div></div>';
+    inner = '<div class="book-cover"><div class="cover-tape"></div><div class="big">scrap<br>book</div><div class="cover-hint">flip the page &#8594;</div></div>';
   } else if (page.kind === 'toc') {
     var links = '';
     DESKTOP_GROUPS.forEach(function(g) { links += '<a onclick="scrapJump(\'' + g.id + '\')">&#183; ' + g.name + '</a>'; });
@@ -1423,6 +1429,19 @@ function scrapShow() {
   var step = isMobile() ? 1 : 2;
   if (pv) pv.style.visibility = scrapPos <= 0 ? 'hidden' : 'visible';
   if (nx) nx.style.visibility = scrapPos >= total - step ? 'hidden' : 'visible';
+  scrapFit();
+}
+function scrapFit() {
+  var book = document.getElementById('scrap-book'); if (!book) return;
+  var surf = book.parentElement; if (!surf) return;
+  if (isMobile()) { book.style.transform = ''; return; }
+  book.style.transform = 'scale(1)';
+  var availW = surf.clientWidth - 140, availH = surf.clientHeight - 26;
+  var bw = book.offsetWidth || 1, bh = book.offsetHeight || 1;
+  var sc = Math.min(availW / bw, availH / bh);
+  if (!isFinite(sc) || sc <= 0) sc = 1;
+  if (sc > 2.4) sc = 2.4;
+  book.style.transform = 'scale(' + sc + ')';
 }
 function scrapFlip(dir) {
   var step = isMobile() ? 1 : 2;
@@ -1443,18 +1462,9 @@ function openScrapbook() {
   var wid = 'win-scrapbook';
   if (openWindows[wid]) { bringToFront(wid); return; }
   buildScrapBook(); scrapPos = 0;
-  var w, hh;
-  if (isMobile()) { w = window.innerWidth - 6; hh = Math.round((window.innerHeight || document.documentElement.clientHeight) * 0.9); }
-  else { w = Math.min(900, window.innerWidth - 30); hh = Math.min(684, (window.innerHeight || document.documentElement.clientHeight) - 78); }
-  var x = Math.round((window.innerWidth - w) / 2);
-  var y = Math.round(((window.innerHeight || document.documentElement.clientHeight) - 48 - hh) / 2);
-  if (y < 4) y = 4; if (x < 4) x = 4;
-  var h = '<div class="window scrapbook-win" id="' + wid + '" style="left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + hh + 'px;z-index:' + (++zCounter) + '" onmousedown="bringToFront(\'' + wid + '\')">' +
-    '<div class="title-bar" onmousedown="startDrag(event,\'' + wid + '\')" ontouchstart="startDragTouch(event,\'' + wid + '\')">' +
-    '<div class="drag-handle"></div>' + folderSVG + '<span class="title-text">Scrapbook</span>' +
-    '<span class="book-ind" id="scrap-ind"></span>' +
-    '<div style="display:flex;gap:2px" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"><button class="win-btn close-btn" onclick="closeWindow(\'' + wid + '\')" ontouchend="event.preventDefault();closeWindow(\'' + wid + '\')">&#10005;</button></div></div>' +
+  var h = '<div class="window scrapbook-win" id="' + wid + '" style="z-index:' + (++zCounter) + '" onmousedown="bringToFront(\'' + wid + '\')">' +
     '<div class="book-surface">' +
+    '<button class="book-close" onclick="closeWindow(\'' + wid + '\')" ontouchend="event.preventDefault();closeWindow(\'' + wid + '\')" title="Close">&#10005;</button>' +
     '<button class="flip prev" id="scrap-prev" onclick="scrapFlip(-1)" ontouchend="event.preventDefault();scrapFlip(-1)">&#8249;</button>' +
     '<div class="book" id="scrap-book"></div>' +
     '<button class="flip next" id="scrap-next" onclick="scrapFlip(1)" ontouchend="event.preventDefault();scrapFlip(1)">&#8250;</button>' +
@@ -1467,6 +1477,7 @@ document.addEventListener('keydown', function(e) {
   if (activeWindowId !== 'win-scrapbook' || !openWindows['win-scrapbook']) return;
   if (e.key === 'ArrowRight') { scrapFlip(1); } else if (e.key === 'ArrowLeft') { scrapFlip(-1); }
 });
+window.addEventListener('resize', function() { if (openWindows['win-scrapbook']) scrapShow(); });
 
 // ---------- Photo group (all rolls' images, from dispos.zip) ----------
 function openGroup(groupId) {

@@ -103,6 +103,44 @@
     .time-display { font-size: 10px; min-width: 65px; }
     .drag-handle { display: block; width: 40px; height: 4px; background: rgba(255,255,255,0.4); border-radius: 2px; position: absolute; top: 3px; left: 50%; transform: translateX(-50%); pointer-events: none; }
   }
+  /* --- Scrapbook BOOK (page-flip) --- */
+  .scrapbook-win .book-ind { color:#e7ecff; font-size:11px; margin:0 6px; white-space:nowrap; flex-shrink:0; }
+  .book-surface { flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:14px 8px; background:#2c2216; background-image:radial-gradient(circle at 50% 28%, #5a4832, #211910); overflow:hidden; position:relative; }
+  .book { display:flex; box-shadow:0 22px 46px rgba(0,0,0,.55); border-radius:8px; }
+  .book-page { width:320px; height:452px; background:#faf6ea; background-image:radial-gradient(rgba(150,138,110,.5) 1.1px, transparent 1.5px); background-size:22px 22px; background-position:9px 11px; position:relative; overflow:hidden; padding:16px 15px 26px; }
+  .book-page.left { border-radius:7px 0 0 7px; box-shadow:inset -22px 0 30px -20px rgba(80,55,20,.55); }
+  .book-page.right { border-radius:0 7px 7px 0; box-shadow:inset 22px 0 30px -20px rgba(80,55,20,.55); }
+  .book-page.only { border-radius:7px; }
+  .book-title { font-family:'Caveat',cursive; font-weight:700; font-size:29px; color:#36271a; line-height:1; margin-bottom:8px; text-align:center; }
+  .page-photos { display:flex; flex-wrap:wrap; gap:15px 12px; justify-content:center; align-content:flex-start; }
+  .page-photos .scrap-photo { background:#fff; padding:5px 5px 19px; box-shadow:0 5px 12px rgba(40,25,5,.35); }
+  .page-photos .scrap-photo img, .page-photos .scrap-cover-vid { width:118px; height:78px; }
+  .page-photos .scrap-photo .cap { font-size:14px; margin-top:4px; max-width:118px; }
+  .page-num { position:absolute; bottom:7px; font-family:'Caveat',cursive; font-size:14px; color:#9a8a68; }
+  .book-page.left .page-num { left:16px; }
+  .book-page.right .page-num, .book-page.only .page-num { right:16px; }
+  .flip { flex-shrink:0; width:38px; height:72px; background:rgba(250,246,234,.92); border:1px solid #b7a988; border-radius:6px; color:#4a3a22; font-size:26px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 8px rgba(0,0,0,.4); -webkit-tap-highlight-color:transparent; }
+  .flip:active { transform:scale(.93); }
+  .book-cover { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; position:relative; }
+  .book-cover .big { font-family:'Caveat',cursive; font-weight:700; font-size:58px; color:#36271a; line-height:.9; }
+  .book-cover .cover-sub { font-family:'Caveat',cursive; font-size:21px; color:#6a5a3e; margin-top:16px; }
+  .book-cover .cover-hint { font-family:'Caveat',cursive; font-size:16px; color:#9a8a68; margin-top:34px; }
+  .cover-tape { position:absolute; top:44px; width:74px; height:24px; background:rgba(220,205,160,.6); transform:rotate(-6deg); box-shadow:0 1px 2px rgba(0,0,0,.15); }
+  .book-toc { padding:4px 8px; }
+  .book-toc a { display:block; font-family:'Caveat',cursive; font-size:21px; color:#2f4d8a; padding:3px 6px; cursor:pointer; border-radius:4px; }
+  .book-toc a:hover, .book-toc a:active { background:rgba(47,77,138,.12); }
+  .pv-mat { flex:1; margin:2px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#efe7d5; background-image:radial-gradient(rgba(150,138,110,.4) 1px, transparent 1.3px); background-size:20px 20px; }
+  .pv-frame { background:#fff; padding:12px 12px 34px; box-shadow:0 10px 26px rgba(30,18,4,.45); max-width:94%; max-height:94%; display:flex; flex-direction:column; }
+  .pv-frame img { flex:1 1 auto; min-height:0; max-width:100%; object-fit:contain; display:block; }
+  .pv-cap { font-family:'Caveat',cursive; font-weight:600; font-size:20px; text-align:center; color:#2a1f16; margin-top:10px; flex-shrink:0; }
+  @media (max-width:768px){
+    .book-page { width:min(94vw,380px); height:auto; min-height:66vh; }
+    .book-page.left { display:none; }
+    .book-cover .big { font-size:50px; }
+    .flip { width:32px; height:54px; font-size:22px; }
+    .page-photos .scrap-photo img, .page-photos .scrap-cover-vid { width:130px; height:86px; }
+    .page-photos .scrap-photo .cap { max-width:130px; }
+  }
 </style>
 </head>
 <body>
@@ -1313,34 +1351,122 @@ function getWindowSize(type) {
   return { w: 540, h: 420, x: 120 + n * 30, y: 40 + n * 30 };
 }
 
-// ---------- Scrapbook root (folders = photo groups + a Videos folder) ----------
+// ---------- Scrapbook BOOK (flip through pages) ----------
 var scrapPlaySVG = '<svg width="40" height="40" viewBox="0 0 24 24"><polygon points="8,5 8,19 19,12" fill="#fff"/></svg>';
 function scrapRot(i) { return ((i * 53) % 9) - 4; }
 function scrapTape(i) { var m = i % 3; return m === 0 ? '<div class="scrap-tape"></div>' : (m === 1 ? '<div class="scrap-tape l"></div><div class="scrap-tape r"></div>' : '<div class="scrap-tape r"></div>'); }
+var SCRAP_PAGES = null, scrapPos = 0, scrapAlbumStart = {};
+function buildScrapBook() {
+  if (SCRAP_PAGES) return;
+  SCRAP_PAGES = []; scrapAlbumStart = {};
+  SCRAP_PAGES.push({ kind: 'cover' });
+  SCRAP_PAGES.push({ kind: 'toc' });
+  var PER = 6;
+  DESKTOP_GROUPS.forEach(function(group) {
+    var imgs = [];
+    group.children.forEach(function(zip) { zip.images.forEach(function(img) { imgs.push({ img: img, zipId: zip.id }); }); });
+    scrapAlbumStart[group.id] = SCRAP_PAGES.length;
+    for (var i = 0; i < imgs.length; i += PER) {
+      SCRAP_PAGES.push({ kind: 'photos', groupId: group.id, title: (i === 0 ? group.name : ''), items: imgs.slice(i, i + PER) });
+    }
+  });
+  scrapAlbumStart['__videos'] = SCRAP_PAGES.length;
+  var VPER = 4;
+  for (var v = 0; v < VIDEOS.length; v += VPER) {
+    SCRAP_PAGES.push({ kind: 'videos', title: (v === 0 ? 'Videos' : ''), items: VIDEOS.slice(v, v + VPER) });
+  }
+  if (SCRAP_PAGES.length % 2 === 1) SCRAP_PAGES.push({ kind: 'blank' });
+}
+function renderScrapPage(page, pageNum) {
+  if (!page) return '';
+  var inner = '';
+  if (page.kind === 'cover') {
+    inner = '<div class="book-cover"><div class="cover-tape"></div><div class="big">scrap<br>book</div><div class="cover-sub">&#10047; a lil bit of everything &#10047;</div><div class="cover-hint">flip the page &#8594;</div></div>';
+  } else if (page.kind === 'toc') {
+    var links = '';
+    DESKTOP_GROUPS.forEach(function(g) { links += '<a onclick="scrapJump(\'' + g.id + '\')">&#183; ' + g.name + '</a>'; });
+    links += '<a onclick="scrapJump(\'__videos\')">&#183; Videos &#9658;</a>';
+    inner = '<div class="book-title">contents</div><div class="book-toc">' + links + '</div>';
+  } else if (page.kind === 'photos') {
+    var ph = '';
+    page.items.forEach(function(it, k) {
+      var s = pageNum * 3 + k;
+      ph += '<div class="scrap-photo" style="transform:rotate(' + scrapRot(s) + 'deg)" ondblclick="openImageFromZip(\'' + it.img.id + '\',\'' + it.zipId + '\',\'' + page.groupId + '\')" ontouchend="event.preventDefault();openImageFromZip(\'' + it.img.id + '\',\'' + it.zipId + '\',\'' + page.groupId + '\')">' + scrapTape(s) +
+        '<img src="' + it.img.url + '" alt="' + it.img.name + '" loading="lazy"><div class="cap">' + it.img.name + '</div></div>';
+    });
+    inner = (page.title ? '<div class="book-title">' + page.title + '</div>' : '') + '<div class="page-photos">' + ph + '</div>';
+  } else if (page.kind === 'videos') {
+    var vv = '';
+    page.items.forEach(function(v, k) {
+      var s = pageNum * 3 + k;
+      vv += '<div class="scrap-photo" style="transform:rotate(' + scrapRot(s) + 'deg)" ondblclick="openVideo(\'' + v.id + '\')" ontouchend="event.preventDefault();openVideo(\'' + v.id + '\')">' + scrapTape(s) +
+        '<div class="scrap-cover-vid">' + scrapPlaySVG + '</div><div class="cap">' + v.name + '</div></div>';
+    });
+    inner = (page.title ? '<div class="book-title">' + page.title + '</div>' : '') + '<div class="page-photos">' + vv + '</div>';
+  }
+  var num = (page.kind === 'cover' || page.kind === 'blank') ? '' : '<div class="page-num">' + pageNum + '</div>';
+  return inner + num;
+}
+function scrapShow() {
+  var book = document.getElementById('scrap-book'); if (!book) return;
+  var total = SCRAP_PAGES.length;
+  if (isMobile()) {
+    book.innerHTML = '<div class="book-page right only">' + renderScrapPage(SCRAP_PAGES[scrapPos], scrapPos + 1) + '</div>';
+  } else {
+    var L = SCRAP_PAGES[scrapPos], R = SCRAP_PAGES[scrapPos + 1];
+    book.innerHTML = '<div class="book-page left">' + renderScrapPage(L, scrapPos + 1) + '</div>' +
+                     '<div class="book-page right">' + renderScrapPage(R, scrapPos + 2) + '</div>';
+  }
+  var ind = document.getElementById('scrap-ind');
+  if (ind) ind.textContent = isMobile() ? ((scrapPos + 1) + ' / ' + total) : ((scrapPos + 1) + '–' + Math.min(scrapPos + 2, total) + ' / ' + total);
+  var pv = document.getElementById('scrap-prev'), nx = document.getElementById('scrap-next');
+  var step = isMobile() ? 1 : 2;
+  if (pv) pv.style.visibility = scrapPos <= 0 ? 'hidden' : 'visible';
+  if (nx) nx.style.visibility = scrapPos >= total - step ? 'hidden' : 'visible';
+}
+function scrapFlip(dir) {
+  var step = isMobile() ? 1 : 2;
+  scrapPos += dir * step;
+  if (scrapPos < 0) scrapPos = 0;
+  var max = SCRAP_PAGES.length - step; if (max < 0) max = 0;
+  if (scrapPos > max) scrapPos = max;
+  if (!isMobile() && scrapPos % 2 === 1) scrapPos--;
+  scrapShow();
+}
+function scrapJump(id) {
+  var t = scrapAlbumStart[id]; if (t == null) return;
+  if (!isMobile() && t % 2 === 1) t--;
+  scrapPos = t; scrapShow();
+}
 function openScrapbook() {
   closeStart();
   var wid = 'win-scrapbook';
   if (openWindows[wid]) { bringToFront(wid); return; }
-  var sz = getWindowSize('folder'); var items = '';
-  DESKTOP_GROUPS.forEach(function(group, i) {
-    var cover = (group.children[0] && group.children[0].images[0]) ? group.children[0].images[0].url : '';
-    items += '<div class="scrap-photo" style="transform:rotate(' + scrapRot(i) + 'deg)" ondblclick="openGroup(\'' + group.id + '\')" ontouchend="event.preventDefault();openGroup(\'' + group.id + '\')">' + scrapTape(i) +
-      '<img src="' + cover + '" alt="' + group.name + '" loading="lazy"><div class="cap">' + group.name + '</div></div>';
-  });
-  items += '<div class="scrap-photo" style="transform:rotate(3deg)" ondblclick="openVideosFolder()" ontouchend="event.preventDefault();openVideosFolder()"><div class="scrap-tape"></div>' +
-    '<div class="scrap-cover-vid">' + scrapPlaySVG + '</div><div class="cap">Videos</div></div>';
-  var count = DESKTOP_GROUPS.length + 1;
-  var h = '<div class="window" id="' + wid + '" style="left:'+sz.x+'px;top:'+sz.y+'px;width:'+sz.w+'px;height:'+sz.h+'px;z-index:'+(++zCounter)+'" onmousedown="bringToFront(\''+wid+'\')">' +
-    '<div class="title-bar" onmousedown="startDrag(event,\''+wid+'\')" ontouchstart="startDragTouch(event,\''+wid+'\')">' +
+  buildScrapBook(); scrapPos = 0;
+  var w, hh;
+  if (isMobile()) { w = window.innerWidth - 6; hh = Math.round((window.innerHeight || document.documentElement.clientHeight) * 0.9); }
+  else { w = Math.min(900, window.innerWidth - 30); hh = Math.min(684, (window.innerHeight || document.documentElement.clientHeight) - 78); }
+  var x = Math.round((window.innerWidth - w) / 2);
+  var y = Math.round(((window.innerHeight || document.documentElement.clientHeight) - 48 - hh) / 2);
+  if (y < 4) y = 4; if (x < 4) x = 4;
+  var h = '<div class="window scrapbook-win" id="' + wid + '" style="left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + hh + 'px;z-index:' + (++zCounter) + '" onmousedown="bringToFront(\'' + wid + '\')">' +
+    '<div class="title-bar" onmousedown="startDrag(event,\'' + wid + '\')" ontouchstart="startDragTouch(event,\'' + wid + '\')">' +
     '<div class="drag-handle"></div>' + folderSVG + '<span class="title-text">Scrapbook</span>' +
-    '<div style="display:flex;gap:2px" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"><button class="win-btn close-btn" onclick="closeWindow(\''+wid+'\')" ontouchend="event.preventDefault();closeWindow(\''+wid+'\')">✕</button></div></div>' +
-    '<div class="menu-bar"><span>File</span><span>Edit</span><span>View</span><span>Help</span></div>' +
-    '<div class="address-bar"><span>Address:</span><div class="addr-input">C:\\Scrapbook</div></div>' +
-    '<div class="window-content"><div class="scrap-page"><div class="scrap-head">\u2726 Scrapbook \u2726</div><div class="scrap-grid">' + items + '</div></div></div>' +
-    '<div class="status-bar">' + count + ' folder(s)</div></div>';
+    '<span class="book-ind" id="scrap-ind"></span>' +
+    '<div style="display:flex;gap:2px" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"><button class="win-btn close-btn" onclick="closeWindow(\'' + wid + '\')" ontouchend="event.preventDefault();closeWindow(\'' + wid + '\')">&#10005;</button></div></div>' +
+    '<div class="book-surface">' +
+    '<button class="flip prev" id="scrap-prev" onclick="scrapFlip(-1)" ontouchend="event.preventDefault();scrapFlip(-1)">&#8249;</button>' +
+    '<div class="book" id="scrap-book"></div>' +
+    '<button class="flip next" id="scrap-next" onclick="scrapFlip(1)" ontouchend="event.preventDefault();scrapFlip(1)">&#8250;</button>' +
+    '</div></div>';
   document.getElementById('windows').insertAdjacentHTML('beforeend', h);
-  openWindows[wid] = { type: 'folder', name: 'Scrapbook' }; bringToFront(wid); updateTaskbar();
+  openWindows[wid] = { type: 'book', name: 'Scrapbook' }; bringToFront(wid); updateTaskbar();
+  scrapShow();
 }
+document.addEventListener('keydown', function(e) {
+  if (activeWindowId !== 'win-scrapbook' || !openWindows['win-scrapbook']) return;
+  if (e.key === 'ArrowRight') { scrapFlip(1); } else if (e.key === 'ArrowLeft') { scrapFlip(-1); }
+});
 
 // ---------- Photo group (all rolls' images, from dispos.zip) ----------
 function openGroup(groupId) {
@@ -1382,27 +1508,23 @@ function openImageFromZip(imageId, zipId, groupId) {
   var image = zip.images[imgIdx];
   if (!image) return;
   viewerStates[wid] = { groupId: groupId, zipId: zipId, currentIdx: imgIdx };
-  var imgBackFn = "goBack('" + wid + "','openGroup',['" + groupId + "'])";
-  var preload = new Image();
-  var build = function() {
-    var sz = fitWindow(preload.naturalWidth || 800, preload.naturalHeight || 600);
-    var h = '<div class="window" id="' + wid + '" style="left:'+sz.x+'px;top:'+sz.y+'px;width:'+sz.w+'px;height:'+sz.h+'px;z-index:'+(++zCounter)+'" onmousedown="bringToFront(\''+wid+'\')">' +
-      '<div class="title-bar" onmousedown="startDrag(event,\''+wid+'\')" ontouchstart="startDragTouch(event,\''+wid+'\')">' +
-      '<div class="drag-handle"></div>' + imageSVG + '<span class="title-text" id="title-' + wid + '">' + image.name + ' — Image Viewer</span>' +
-      '<div style="display:flex;gap:2px" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"><button class="win-btn close-btn" onclick="closeWindow(\''+wid+'\')" ontouchend="event.preventDefault();closeWindow(\''+wid+'\')">✕</button></div></div>' +
-      '<div style="display:flex;align-items:center;padding:2px 4px;border-bottom:1px solid #808080;flex-shrink:0"><button class="win-btn" style="min-width:28px;min-height:20px;font-size:12px" onclick="' + imgBackFn + '" ontouchend="event.preventDefault();' + imgBackFn + '">◀</button></div>' +
-      '<div class="viewer-area"><img id="vimg-' + wid + '" src="' + image.url + '" alt="' + image.name + '"></div>' +
-      '<div class="viewer-nav">' +
-      '<button class="win-btn" onclick="navImage(\''+wid+'\',-1)" ontouchend="event.preventDefault();navImage(\''+wid+'\',-1)"><svg width="14" height="14" viewBox="0 0 14 14"><polygon points="8,2 2,7 8,12" fill="black"/></svg></button>' +
-      '<span class="nav-label" id="navlabel-' + wid + '">' + (imgIdx+1) + ' / ' + zip.images.length + ' [' + zip.name + ']</span>' +
-      '<button class="win-btn" onclick="navImage(\''+wid+'\',1)" ontouchend="event.preventDefault();navImage(\''+wid+'\',1)"><svg width="14" height="14" viewBox="0 0 14 14"><polygon points="6,2 12,7 6,12" fill="black"/></svg></button></div></div>';
-    document.getElementById('windows').insertAdjacentHTML('beforeend', h);
-    openWindows[wid] = { type: 'image', name: image.name }; bringToFront(wid); updateTaskbar();
-    if (preload.naturalWidth) refitWindow(wid, preload.naturalWidth, preload.naturalHeight);
-  };
-  preload.onload = build;
-  preload.onerror = build;
-  preload.src = image.url;
+  var w, hh;
+  if (isMobile()) { w = window.innerWidth - 8; hh = Math.round((window.innerHeight || document.documentElement.clientHeight) * 0.86); }
+  else { w = Math.min(760, window.innerWidth - 60); hh = Math.min(650, (window.innerHeight || document.documentElement.clientHeight) - 90); }
+  var x = Math.round((window.innerWidth - w) / 2);
+  var y = Math.round(((window.innerHeight || document.documentElement.clientHeight) - 48 - hh) / 2);
+  if (y < 4) y = 4; if (x < 4) x = 4;
+  var h = '<div class="window pv-win" id="' + wid + '" style="left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + hh + 'px;z-index:' + (++zCounter) + '" onmousedown="bringToFront(\'' + wid + '\')">' +
+    '<div class="title-bar" onmousedown="startDrag(event,\'' + wid + '\')" ontouchstart="startDragTouch(event,\'' + wid + '\')">' +
+    '<div class="drag-handle"></div>' + imageSVG + '<span class="title-text" id="title-' + wid + '">' + image.name + '</span>' +
+    '<div style="display:flex;gap:2px" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"><button class="win-btn close-btn" onclick="closeWindow(\'' + wid + '\')" ontouchend="event.preventDefault();closeWindow(\'' + wid + '\')">&#10005;</button></div></div>' +
+    '<div class="pv-mat"><div class="pv-frame"><img id="vimg-' + wid + '" src="' + image.url + '" alt="' + image.name + '"><div class="pv-cap" id="pvcap-' + wid + '">' + image.name + '</div></div></div>' +
+    '<div class="viewer-nav">' +
+    '<button class="win-btn" onclick="navImage(\'' + wid + '\',-1)" ontouchend="event.preventDefault();navImage(\'' + wid + '\',-1)">&#8249;</button>' +
+    '<span class="nav-label" id="navlabel-' + wid + '">' + (imgIdx + 1) + ' / ' + zip.images.length + ' · ' + zip.name + '</span>' +
+    '<button class="win-btn" onclick="navImage(\'' + wid + '\',1)" ontouchend="event.preventDefault();navImage(\'' + wid + '\',1)">&#8250;</button></div></div>';
+  document.getElementById('windows').insertAdjacentHTML('beforeend', h);
+  openWindows[wid] = { type: 'image', name: image.name }; bringToFront(wid); updateTaskbar();
 }
 
 function fitWindow(imgW, imgH) {
@@ -1447,19 +1569,18 @@ function navImage(wid, dir) {
   if (newIdx >= zip.images.length) {
     var zi = group.children.findIndex(function(z) { return z.id === state.zipId; });
     var ni = zi + 1; if (ni >= group.children.length) ni = 0;
-    zip = group.children[ni]; state.zipId = zip.id; state.currentIdx = 0; newIdx = 0;
+    zip = group.children[ni]; state.zipId = zip.id; newIdx = 0;
   } else if (newIdx < 0) {
     var zi2 = group.children.findIndex(function(z) { return z.id === state.zipId; });
     var pi = zi2 - 1; if (pi < 0) pi = group.children.length - 1;
-    zip = group.children[pi]; state.zipId = zip.id; state.currentIdx = zip.images.length - 1; newIdx = zip.images.length - 1;
-  } else { state.currentIdx = newIdx; }
+    zip = group.children[pi]; state.zipId = zip.id; newIdx = zip.images.length - 1;
+  }
+  state.currentIdx = newIdx;
   var img = zip.images[newIdx];
-  var vimg = document.getElementById('vimg-' + wid); vimg.src = img.url;
-  var preload = new Image();
-  preload.onload = function() { refitWindow(wid, preload.naturalWidth, preload.naturalHeight); };
-  preload.src = img.url;
-  document.getElementById('title-' + wid).textContent = img.name + ' — Image Viewer (' + zip.name + ')';
-  document.getElementById('navlabel-' + wid).textContent = (newIdx+1) + ' / ' + zip.images.length + ' [' + zip.name + ']';
+  var vimg = document.getElementById('vimg-' + wid); if (vimg) vimg.src = img.url;
+  var cap = document.getElementById('pvcap-' + wid); if (cap) cap.textContent = img.name;
+  var t = document.getElementById('title-' + wid); if (t) t.textContent = img.name;
+  var nl = document.getElementById('navlabel-' + wid); if (nl) nl.textContent = (newIdx + 1) + ' / ' + zip.images.length + ' · ' + zip.name;
   openWindows[wid].name = img.name; updateTaskbar();
 }
 
@@ -1527,7 +1648,7 @@ function onVideoEnd(id) { var f = document.getElementById('progress-' + id); if 
 // ---------- window mgmt ----------
 function goBack(currentWid, parentFn, args) { closeWindow(currentWid); window[parentFn].apply(null, args); }
 function closeWindow(wid) { var el = document.getElementById(wid); if (el) { var vs = el.querySelectorAll('video'); for (var i = 0; i < vs.length; i++) { try { vs[i].pause(); } catch(e){} } el.remove(); } delete openWindows[wid]; delete viewerStates[wid]; updateTaskbar(); }
-function updateTaskbar() { var c = document.getElementById('taskbarItems'); var html = ''; for (var id in openWindows) { var w = openWindows[id]; var icon = w.type === 'folder' ? '📁' : (w.type === 'video' ? '🎬' : '🖼️'); html += '<button class="win-btn taskbar-item ' + (id===activeWindowId?'active':'') + '" onclick="bringToFront(\'' + id + '\')">' + icon + ' ' + w.name + '</button>'; } c.innerHTML = html; }
+function updateTaskbar() { var c = document.getElementById('taskbarItems'); var html = ''; for (var id in openWindows) { var w = openWindows[id]; var icon = w.type === 'book' ? '📖' : (w.type === 'folder' ? '📁' : (w.type === 'video' ? '🎬' : '🖼️')); html += '<button class="win-btn taskbar-item ' + (id===activeWindowId?'active':'') + '" onclick="bringToFront(\'' + id + '\')">' + icon + ' ' + w.name + '</button>'; } c.innerHTML = html; }
 
 // ---------- dragging windows ----------
 var dragState = null;

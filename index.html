@@ -138,7 +138,12 @@
   .book-toc { padding:4px 8px; }
   .book-toc a { display:block; font-family:'Caveat',cursive; font-size:21px; color:#2f4d8a; padding:3px 6px; cursor:pointer; border-radius:4px; }
   .book-toc a:hover, .book-toc a:active { background:rgba(47,77,138,.12); }
-  .pv-mat { flex:1; margin:2px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#efe7d5; background-image:radial-gradient(rgba(150,138,110,.4) 1px, transparent 1.3px); background-size:20px 20px; }
+  .pv-win { background:transparent !important; border:none !important; box-shadow:none !important; }
+  .pv-mat { flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; background:transparent; position:relative; }
+  .pv-arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:6; width:38px; height:70px; background:rgba(250,246,234,.9); border:1px solid #b7a988; border-radius:7px; color:#4a3a22; font-size:24px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,.5); -webkit-tap-highlight-color:transparent; }
+  .pv-arrow.prev { left:8px; }
+  .pv-arrow.next { right:8px; }
+  .pv-arrow:active { filter:brightness(.9); }
   .pv-frame { background:#fff; padding:12px 12px 34px; box-shadow:0 10px 26px rgba(30,18,4,.45); max-width:94%; max-height:94%; display:flex; flex-direction:column; }
   .pv-frame img { flex:1 1 auto; min-height:0; max-width:100%; object-fit:contain; display:block; }
   .pv-cap { font-family:'Caveat',cursive; font-weight:600; font-size:20px; text-align:center; color:#2a1f16; margin-top:10px; flex-shrink:0; }
@@ -1551,20 +1556,18 @@ function openImageFromZip(imageId, zipId, groupId) {
   if (!image) return;
   viewerStates[wid] = { groupId: groupId, zipId: zipId, currentIdx: imgIdx };
   var w, hh;
-  if (isMobile()) { w = window.innerWidth - 8; hh = Math.round((window.innerHeight || document.documentElement.clientHeight) * 0.86); }
-  else { w = Math.min(760, window.innerWidth - 60); hh = Math.min(650, (window.innerHeight || document.documentElement.clientHeight) - 90); }
+  if (isMobile()) { w = window.innerWidth - 6; hh = Math.round((window.innerHeight || document.documentElement.clientHeight) * 0.9); }
+  else { w = Math.min(940, window.innerWidth - 40); hh = Math.min(760, (window.innerHeight || document.documentElement.clientHeight) - 66); }
   var x = Math.round((window.innerWidth - w) / 2);
-  var y = Math.round(((window.innerHeight || document.documentElement.clientHeight) - 48 - hh) / 2);
+  var y = Math.round(((window.innerHeight || document.documentElement.clientHeight) - 40 - hh) / 2);
   if (y < 4) y = 4; if (x < 4) x = 4;
   var h = '<div class="window pv-win" id="' + wid + '" style="left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + hh + 'px;z-index:' + (++zCounter) + '" onmousedown="bringToFront(\'' + wid + '\')">' +
-    '<div class="title-bar" onmousedown="startDrag(event,\'' + wid + '\')" ontouchstart="startDragTouch(event,\'' + wid + '\')">' +
-    '<div class="drag-handle"></div>' + imageSVG + '<span class="title-text" id="title-' + wid + '">' + image.name + '</span>' +
-    '<div style="display:flex;gap:2px" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"><button class="win-btn close-btn" onclick="closeWindow(\'' + wid + '\')" ontouchend="event.preventDefault();closeWindow(\'' + wid + '\')">&#10005;</button></div></div>' +
-    '<div class="pv-mat"><div class="pv-frame"><img id="vimg-' + wid + '" src="' + image.url + '" alt="' + image.name + '"><div class="pv-cap" id="pvcap-' + wid + '">' + image.name + '</div></div></div>' +
-    '<div class="viewer-nav">' +
-    '<button class="win-btn" onclick="navImage(\'' + wid + '\',-1)" ontouchend="event.preventDefault();navImage(\'' + wid + '\',-1)">&#8249;</button>' +
-    '<span class="nav-label" id="navlabel-' + wid + '">' + (imgIdx + 1) + ' / ' + zip.images.length + ' · ' + zip.name + '</span>' +
-    '<button class="win-btn" onclick="navImage(\'' + wid + '\',1)" ontouchend="event.preventDefault();navImage(\'' + wid + '\',1)">&#8250;</button></div></div>';
+    '<div class="pv-mat">' +
+    '<button class="book-close" onclick="closeWindow(\'' + wid + '\')" ontouchend="event.preventDefault();closeWindow(\'' + wid + '\')" title="Close">&#10005;</button>' +
+    '<button class="pv-arrow prev" onclick="navImage(\'' + wid + '\',-1)" ontouchend="event.preventDefault();navImage(\'' + wid + '\',-1)">&#8249;</button>' +
+    '<div class="pv-frame"><img id="vimg-' + wid + '" src="' + image.url + '" alt="' + image.name + '"><div class="pv-cap" id="pvcap-' + wid + '">' + image.name + '</div></div>' +
+    '<button class="pv-arrow next" onclick="navImage(\'' + wid + '\',1)" ontouchend="event.preventDefault();navImage(\'' + wid + '\',1)">&#8250;</button>' +
+    '</div></div>';
   document.getElementById('windows').insertAdjacentHTML('beforeend', h);
   openWindows[wid] = { type: 'image', name: image.name }; bringToFront(wid); updateTaskbar();
 }

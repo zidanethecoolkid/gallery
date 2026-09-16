@@ -148,12 +148,9 @@
   .pv-frame img { flex:1 1 auto; min-height:0; max-width:100%; object-fit:contain; display:block; }
   .pv-cap { font-family:'Caveat',cursive; font-weight:600; font-size:20px; text-align:center; color:#2a1f16; margin-top:10px; flex-shrink:0; }
   @media (max-width:768px){
-    .book-page { width:min(94vw,380px); height:auto; min-height:66vh; }
-    .book-page.left { display:none; }
     .book-cover .big { font-size:50px; }
-    .flip { width:32px; height:54px; font-size:22px; }
-    .page-photos .scrap-photo img, .page-photos .scrap-cover-vid { width:130px; height:86px; }
-    .page-photos .scrap-photo .cap { max-width:130px; }
+    .flip { width:28px; height:60px; font-size:19px; }
+    .flip.prev { left:2px; } .flip.next { right:2px; }
   }
 </style>
 </head>
@@ -1424,17 +1421,13 @@ function renderScrapPage(page, pageNum) {
 function scrapShow() {
   var book = document.getElementById('scrap-book'); if (!book) return;
   var total = SCRAP_PAGES.length;
-  if (isMobile()) {
-    book.innerHTML = '<div class="book-page right only">' + renderScrapPage(SCRAP_PAGES[scrapPos], scrapPos + 1) + '</div>';
-  } else {
-    var L = SCRAP_PAGES[scrapPos], R = SCRAP_PAGES[scrapPos + 1];
-    book.innerHTML = '<div class="book-page left">' + renderScrapPage(L, scrapPos + 1) + '</div>' +
-                     '<div class="book-page right">' + renderScrapPage(R, scrapPos + 2) + '</div>';
-  }
+  var L = SCRAP_PAGES[scrapPos], R = SCRAP_PAGES[scrapPos + 1];
+  book.innerHTML = '<div class="book-page left">' + renderScrapPage(L, scrapPos + 1) + '</div>' +
+                   '<div class="book-page right">' + renderScrapPage(R, scrapPos + 2) + '</div>';
   var ind = document.getElementById('scrap-ind');
-  if (ind) ind.textContent = isMobile() ? ((scrapPos + 1) + ' / ' + total) : ((scrapPos + 1) + '–' + Math.min(scrapPos + 2, total) + ' / ' + total);
+  if (ind) ind.textContent = (scrapPos + 1) + '–' + Math.min(scrapPos + 2, total) + ' / ' + total;
   var pv = document.getElementById('scrap-prev'), nx = document.getElementById('scrap-next');
-  var step = isMobile() ? 1 : 2;
+  var step = 2;
   if (pv) pv.style.visibility = scrapPos <= 0 ? 'hidden' : 'visible';
   if (nx) nx.style.visibility = scrapPos >= total - step ? 'hidden' : 'visible';
   scrapFit();
@@ -1442,9 +1435,8 @@ function scrapShow() {
 function scrapFit() {
   var book = document.getElementById('scrap-book'); if (!book) return;
   var surf = book.parentElement; if (!surf) return;
-  if (isMobile()) { book.style.transform = ''; return; }
   book.style.transform = 'scale(1)';
-  var availW = surf.clientWidth - 140, availH = surf.clientHeight - 26;
+  var availW = surf.clientWidth - (isMobile() ? 66 : 140), availH = surf.clientHeight - 22;
   var bw = book.offsetWidth || 1, bh = book.offsetHeight || 1;
   var sc = Math.min(availW / bw, availH / bh);
   if (!isFinite(sc) || sc <= 0) sc = 1;
@@ -1452,17 +1444,17 @@ function scrapFit() {
   book.style.transform = 'scale(' + sc + ')';
 }
 function scrapFlip(dir) {
-  var step = isMobile() ? 1 : 2;
+  var step = 2;
   scrapPos += dir * step;
   if (scrapPos < 0) scrapPos = 0;
   var max = SCRAP_PAGES.length - step; if (max < 0) max = 0;
   if (scrapPos > max) scrapPos = max;
-  if (!isMobile() && scrapPos % 2 === 1) scrapPos--;
+  if (scrapPos % 2 === 1) scrapPos--;
   scrapShow();
 }
 function scrapJump(id) {
   var t = scrapAlbumStart[id]; if (t == null) return;
-  if (!isMobile() && t % 2 === 1) t--;
+  if (t % 2 === 1) t--;
   scrapPos = t; scrapShow();
 }
 function openScrapbook() {
@@ -1472,7 +1464,7 @@ function openScrapbook() {
   buildScrapBook(); scrapPos = 0;
   var vh = window.innerHeight || document.documentElement.clientHeight;
   var w, hh;
-  if (isMobile()) { w = window.innerWidth - 6; hh = Math.round(vh * 0.86); }
+  if (isMobile()) { w = window.innerWidth - 6; hh = Math.min(Math.round(vh * 0.9), Math.round((w - 66) * 452 / 640) + 96); }
   else { w = Math.max(440, Math.min(760, Math.round(window.innerWidth * 0.6))); hh = Math.max(360, Math.min(620, Math.round(vh * 0.78))); }
   var x = Math.round((window.innerWidth - w) / 2);
   var y = Math.round((vh - 40 - hh) / 2); if (y < 4) y = 4; if (x < 4) x = 4;
@@ -1487,6 +1479,7 @@ function openScrapbook() {
     '</div></div>';
   document.getElementById('windows').insertAdjacentHTML('beforeend', h);
   openWindows[wid] = { type: 'book', name: 'Scrapbook' }; bringToFront(wid); updateTaskbar();
+  var dk = document.querySelector('.desktop'); if (dk) dk.style.visibility = 'hidden';
   scrapShow();
 }
 document.addEventListener('keydown', function(e) {
@@ -1692,7 +1685,7 @@ function onVideoEnd(id) { var f = document.getElementById('progress-' + id); if 
 
 // ---------- window mgmt ----------
 function goBack(currentWid, parentFn, args) { closeWindow(currentWid); window[parentFn].apply(null, args); }
-function closeWindow(wid) { var el = document.getElementById(wid); if (el) { var vs = el.querySelectorAll('video'); for (var i = 0; i < vs.length; i++) { try { vs[i].pause(); } catch(e){} } el.remove(); } delete openWindows[wid]; delete viewerStates[wid]; updateTaskbar(); }
+function closeWindow(wid) { var el = document.getElementById(wid); if (el) { var vs = el.querySelectorAll('video'); for (var i = 0; i < vs.length; i++) { try { vs[i].pause(); } catch(e){} } el.remove(); } delete openWindows[wid]; delete viewerStates[wid]; updateTaskbar(); if (!openWindows['win-scrapbook']) { var dk = document.querySelector('.desktop'); if (dk) dk.style.visibility = ''; } }
 function updateTaskbar() { var c = document.getElementById('taskbarItems'); var html = ''; for (var id in openWindows) { var w = openWindows[id]; var icon = w.type === 'book' ? '📖' : (w.type === 'folder' ? '📁' : (w.type === 'video' ? '🎬' : '🖼️')); html += '<button class="win-btn taskbar-item ' + (id===activeWindowId?'active':'') + '" onclick="bringToFront(\'' + id + '\')">' + icon + ' ' + w.name + '</button>'; } c.innerHTML = html; }
 
 // ---------- dragging windows ----------

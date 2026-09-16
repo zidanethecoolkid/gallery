@@ -151,6 +151,9 @@
     .book-cover .big { font-size:50px; }
     .flip { width:28px; height:60px; font-size:19px; }
     .flip.prev { left:2px; } .flip.next { right:2px; }
+    .book { flex-direction:column; }
+    .book-page.left { border-radius:7px 7px 0 0; box-shadow:inset 0 -22px 30px -20px rgba(80,55,20,.5); }
+    .book-page.right { border-radius:0 0 7px 7px; box-shadow:inset 0 22px 30px -20px rgba(80,55,20,.5); }
   }
 </style>
 </head>
@@ -1464,7 +1467,7 @@ function openScrapbook() {
   buildScrapBook(); scrapPos = 0;
   var vh = window.innerHeight || document.documentElement.clientHeight;
   var w, hh;
-  if (isMobile()) { w = window.innerWidth - 6; hh = Math.min(Math.round(vh * 0.9), Math.round((w - 66) * 452 / 640) + 96); }
+  if (isMobile()) { w = window.innerWidth - 6; hh = Math.round(vh * 0.92); }
   else { w = Math.max(440, Math.min(760, Math.round(window.innerWidth * 0.6))); hh = Math.max(360, Math.min(620, Math.round(vh * 0.78))); }
   var x = Math.round((window.innerWidth - w) / 2);
   var y = Math.round((vh - 40 - hh) / 2); if (y < 4) y = 4; if (x < 4) x = 4;

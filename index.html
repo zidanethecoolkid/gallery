@@ -105,7 +105,10 @@
   }
   /* --- Scrapbook BOOK (page-flip) --- */
   .scrapbook-win .book-ind { color:#e7ecff; font-size:11px; margin:0 6px; white-space:nowrap; flex-shrink:0; }
-  .scrapbook-win { background:transparent !important; border:none !important; box-shadow:none !important; left:0 !important; top:0 !important; width:100vw !important; height:calc(100dvh - 40px) !important; }
+  .scrapbook-win { background:transparent !important; border:none !important; box-shadow:none !important; }
+  .book-surface[onmousedown] { cursor:move; }
+  .scrap-resize { position:absolute; right:4px; bottom:4px; width:24px; height:24px; z-index:9; cursor:nwse-resize; border-radius:0 0 5px 0; background:rgba(250,246,234,.9); border:1px solid #b7a988; box-shadow:0 2px 5px rgba(0,0,0,.4); -webkit-tap-highlight-color:transparent; }
+  .scrap-resize::after { content:''; position:absolute; right:4px; bottom:4px; width:10px; height:10px; border-right:2px solid #6a5636; border-bottom:2px solid #6a5636; }
   .book-surface { flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; background:transparent; }
   .book { transform-origin:center center; }
   .book-close { position:absolute; top:14px; right:16px; z-index:8; width:34px; height:34px; border-radius:50%; background:rgba(30,22,14,.5); color:#fff; border:1px solid rgba(255,255,255,.35); font-size:17px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.4); -webkit-tap-highlight-color:transparent; }
@@ -1462,12 +1465,20 @@ function openScrapbook() {
   var wid = 'win-scrapbook';
   if (openWindows[wid]) { bringToFront(wid); return; }
   buildScrapBook(); scrapPos = 0;
-  var h = '<div class="window scrapbook-win" id="' + wid + '" style="z-index:' + (++zCounter) + '" onmousedown="bringToFront(\'' + wid + '\')">' +
-    '<div class="book-surface">' +
+  var vh = window.innerHeight || document.documentElement.clientHeight;
+  var w, hh;
+  if (isMobile()) { w = window.innerWidth - 6; hh = Math.round(vh * 0.86); }
+  else { w = Math.max(440, Math.min(760, Math.round(window.innerWidth * 0.6))); hh = Math.max(360, Math.min(620, Math.round(vh * 0.78))); }
+  var x = Math.round((window.innerWidth - w) / 2);
+  var y = Math.round((vh - 40 - hh) / 2); if (y < 4) y = 4; if (x < 4) x = 4;
+  var dragAttr = isMobile() ? '' : ' onmousedown="startDrag(event,\'' + wid + '\')"';
+  var h = '<div class="window scrapbook-win" id="' + wid + '" style="left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + hh + 'px;z-index:' + (++zCounter) + '" onmousedown="bringToFront(\'' + wid + '\')">' +
+    '<div class="book-surface"' + dragAttr + '>' +
     '<button class="book-close" onclick="closeWindow(\'' + wid + '\')" ontouchend="event.preventDefault();closeWindow(\'' + wid + '\')" title="Close">&#10005;</button>' +
     '<button class="flip prev" id="scrap-prev" onclick="scrapFlip(-1)" ontouchend="event.preventDefault();scrapFlip(-1)">&#8249;</button>' +
     '<div class="book" id="scrap-book"></div>' +
     '<button class="flip next" id="scrap-next" onclick="scrapFlip(1)" ontouchend="event.preventDefault();scrapFlip(1)">&#8250;</button>' +
+    '<div class="scrap-resize" onmousedown="scrapResizeStart(event)" ontouchstart="scrapResizeStart(event)" title="Drag to resize"></div>' +
     '</div></div>';
   document.getElementById('windows').insertAdjacentHTML('beforeend', h);
   openWindows[wid] = { type: 'book', name: 'Scrapbook' }; bringToFront(wid); updateTaskbar();
@@ -1478,6 +1489,26 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight') { scrapFlip(1); } else if (e.key === 'ArrowLeft') { scrapFlip(-1); }
 });
 window.addEventListener('resize', function() { if (openWindows['win-scrapbook']) scrapShow(); });
+var scrapResize = null;
+function scrapResizeStart(e) {
+  e.preventDefault(); e.stopPropagation();
+  var win = document.getElementById('win-scrapbook'); if (!win) return;
+  var pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
+  scrapResize = { x: pt.clientX, y: pt.clientY, w: win.offsetWidth, h: win.offsetHeight };
+  bringToFront('win-scrapbook');
+}
+function scrapResizeMove(cx, cy) {
+  var win = document.getElementById('win-scrapbook'); if (!win || !scrapResize) return;
+  var w = scrapResize.w + (cx - scrapResize.x), h = scrapResize.h + (cy - scrapResize.y);
+  w = Math.max(360, Math.min(w, window.innerWidth - 8));
+  h = Math.max(300, Math.min(h, (window.innerHeight || document.documentElement.clientHeight) - 44));
+  win.style.width = w + 'px'; win.style.height = h + 'px';
+  scrapFit();
+}
+document.addEventListener('mousemove', function(e) { if (scrapResize) scrapResizeMove(e.clientX, e.clientY); });
+document.addEventListener('mouseup', function() { scrapResize = null; });
+document.addEventListener('touchmove', function(e) { if (!scrapResize) return; var t = e.touches[0]; if (t) { e.preventDefault(); scrapResizeMove(t.clientX, t.clientY); } }, { passive: false });
+document.addEventListener('touchend', function() { scrapResize = null; });
 
 // ---------- Photo group (all rolls' images, from dispos.zip) ----------
 function openGroup(groupId) {

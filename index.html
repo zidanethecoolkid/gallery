@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>scrapbook.zip</title>
 <link rel="icon" href="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773174770/icons_skvdhc.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
 <meta property="og:title" content="scrapbook.zip">
 <meta property="og:description" content="photography & videography portfolio">
 <meta property="og:image" content="https://res.cloudinary.com/dbuxi5yul/image/upload/v1773174351/OUTPUT_00257_go7nco.png">
@@ -71,7 +73,21 @@
   .start-menu .menu-item:hover, .start-menu .menu-item:active { background: #000080; color: white; }
   .start-menu .menu-sep { border-top: 1px solid #808080; border-bottom: 1px solid #dfdfdf; margin: 2px 4px; }
   .drag-handle { display: none; }
+  .scrap-page { min-height: 100%; padding: 16px 12px 44px; background-color: #c9ad83; background-image: radial-gradient(circle at 22% 18%, rgba(255,246,224,.4), transparent 46%), radial-gradient(circle at 82% 80%, rgba(110,80,42,.2), transparent 52%), repeating-linear-gradient(90deg, rgba(150,115,70,.05) 0 3px, transparent 3px 6px); box-shadow: inset 0 0 70px rgba(70,45,15,.4); }
+  .scrap-head { font-family: 'Caveat', cursive; font-weight: 700; font-size: 30px; color: #3f2c15; text-align: center; padding: 6px 0 12px; text-shadow: 0 1px 0 rgba(255,255,255,.3); }
+  .scrap-grid { display: flex; flex-wrap: wrap; gap: 30px 24px; justify-content: center; align-items: flex-start; padding: 10px 6px 24px; }
+  .scrap-photo { background: #fffef8; padding: 8px 8px 30px; box-shadow: 0 7px 16px rgba(40,25,5,.42); position: relative; cursor: default; -webkit-tap-highlight-color: transparent; transition: filter .12s, box-shadow .12s; }
+  .scrap-photo:hover { filter: brightness(1.05) saturate(1.06); box-shadow: 0 11px 24px rgba(40,25,5,.5); z-index: 5; }
+  .scrap-photo:active { filter: brightness(.96); }
+  .scrap-photo img { display: block; width: 176px; height: 118px; object-fit: cover; background: #111; }
+  .scrap-photo .cap { font-family: 'Caveat', cursive; font-weight: 600; font-size: 18px; line-height: 1.05; text-align: center; color: #2a1f16; margin-top: 8px; max-width: 176px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .scrap-cover-vid { width: 176px; height: 118px; background: #161616; display: flex; align-items: center; justify-content: center; }
+  .scrap-cover-vid svg { filter: drop-shadow(0 2px 3px rgba(0,0,0,.6)); }
+  .scrap-tape { position: absolute; width: 58px; height: 20px; background: rgba(230,216,172,.62); box-shadow: 0 1px 2px rgba(0,0,0,.18); top: -9px; left: 50%; margin-left: -29px; transform: rotate(-3deg); pointer-events: none; }
+  .scrap-tape.l { left: 4px; margin: 0; top: -8px; width: 46px; transform: rotate(-30deg); }
+  .scrap-tape.r { left: auto; right: 4px; margin: 0; top: -8px; width: 46px; transform: rotate(30deg); }
   @media (max-width: 768px) {
+    .scrap-photo img, .scrap-cover-vid { width: 150px; height: 100px; } .scrap-grid { gap: 26px 16px; } .scrap-head { font-size: 26px; } .scrap-photo .cap { max-width: 150px; }
     .desktop-icon .icon-wrap svg { width: 52px; height: 52px; }
     .title-bar { min-height: 38px; padding: 4px 6px; }
     .title-bar .title-text { font-size: 13px; }
@@ -1298,17 +1314,21 @@ function getWindowSize(type) {
 }
 
 // ---------- Scrapbook root (folders = photo groups + a Videos folder) ----------
+var scrapPlaySVG = '<svg width="40" height="40" viewBox="0 0 24 24"><polygon points="8,5 8,19 19,12" fill="#fff"/></svg>';
+function scrapRot(i) { return ((i * 53) % 9) - 4; }
+function scrapTape(i) { var m = i % 3; return m === 0 ? '<div class="scrap-tape"></div>' : (m === 1 ? '<div class="scrap-tape l"></div><div class="scrap-tape r"></div>' : '<div class="scrap-tape r"></div>'); }
 function openScrapbook() {
   closeStart();
   var wid = 'win-scrapbook';
   if (openWindows[wid]) { bringToFront(wid); return; }
   var sz = getWindowSize('folder'); var items = '';
-  DESKTOP_GROUPS.forEach(function(group) {
-    items += '<div class="file-item" ondblclick="openGroup(\'' + group.id + '\')" ontouchend="event.preventDefault();openGroup(\'' + group.id + '\')">' +
-      '<div class="thumb" style="background:#ffffc0;display:flex;align-items:center;justify-content:center;">' + folderSVG + '</div><div class="file-label">' + group.name + '</div></div>';
+  DESKTOP_GROUPS.forEach(function(group, i) {
+    var cover = (group.children[0] && group.children[0].images[0]) ? group.children[0].images[0].url : '';
+    items += '<div class="scrap-photo" style="transform:rotate(' + scrapRot(i) + 'deg)" ondblclick="openGroup(\'' + group.id + '\')" ontouchend="event.preventDefault();openGroup(\'' + group.id + '\')">' + scrapTape(i) +
+      '<img src="' + cover + '" alt="' + group.name + '" loading="lazy"><div class="cap">' + group.name + '</div></div>';
   });
-  items += '<div class="file-item" ondblclick="openVideosFolder()" ontouchend="event.preventDefault();openVideosFolder()">' +
-    '<div class="thumb" style="background:#000;display:flex;align-items:center;justify-content:center;">' + videoSVG + '</div><div class="file-label">Videos</div></div>';
+  items += '<div class="scrap-photo" style="transform:rotate(3deg)" ondblclick="openVideosFolder()" ontouchend="event.preventDefault();openVideosFolder()"><div class="scrap-tape"></div>' +
+    '<div class="scrap-cover-vid">' + scrapPlaySVG + '</div><div class="cap">Videos</div></div>';
   var count = DESKTOP_GROUPS.length + 1;
   var h = '<div class="window" id="' + wid + '" style="left:'+sz.x+'px;top:'+sz.y+'px;width:'+sz.w+'px;height:'+sz.h+'px;z-index:'+(++zCounter)+'" onmousedown="bringToFront(\''+wid+'\')">' +
     '<div class="title-bar" onmousedown="startDrag(event,\''+wid+'\')" ontouchstart="startDragTouch(event,\''+wid+'\')">' +
@@ -1316,7 +1336,7 @@ function openScrapbook() {
     '<div style="display:flex;gap:2px" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"><button class="win-btn close-btn" onclick="closeWindow(\''+wid+'\')" ontouchend="event.preventDefault();closeWindow(\''+wid+'\')">✕</button></div></div>' +
     '<div class="menu-bar"><span>File</span><span>Edit</span><span>View</span><span>Help</span></div>' +
     '<div class="address-bar"><span>Address:</span><div class="addr-input">C:\\Scrapbook</div></div>' +
-    '<div class="window-content"><div class="file-grid">' + items + '</div></div>' +
+    '<div class="window-content"><div class="scrap-page"><div class="scrap-head">\u2726 Scrapbook \u2726</div><div class="scrap-grid">' + items + '</div></div></div>' +
     '<div class="status-bar">' + count + ' folder(s)</div></div>';
   document.getElementById('windows').insertAdjacentHTML('beforeend', h);
   openWindows[wid] = { type: 'folder', name: 'Scrapbook' }; bringToFront(wid); updateTaskbar();
@@ -1331,8 +1351,8 @@ function openGroup(groupId) {
   var sz = getWindowSize('folder'); var items = ''; var imgCount = 0;
   group.children.forEach(function(zip) {
     zip.images.forEach(function(img) {
-      items += '<div class="file-item" ondblclick="openImageFromZip(\'' + img.id + '\',\'' + zip.id + '\',\'' + groupId + '\')" ontouchend="event.preventDefault();openImageFromZip(\'' + img.id + '\',\'' + zip.id + '\',\'' + groupId + '\')">' +
-        '<div class="thumb"><img src="' + img.url + '" alt="' + img.name + '" loading="lazy"></div><div class="file-label">' + img.name + '</div></div>';
+      items += '<div class="scrap-photo" style="transform:rotate(' + scrapRot(imgCount) + 'deg)" ondblclick="openImageFromZip(\'' + img.id + '\',\'' + zip.id + '\',\'' + groupId + '\')" ontouchend="event.preventDefault();openImageFromZip(\'' + img.id + '\',\'' + zip.id + '\',\'' + groupId + '\')">' + scrapTape(imgCount) +
+        '<img src="' + img.url + '" alt="' + img.name + '" loading="lazy"><div class="cap">' + img.name + '</div></div>';
       imgCount++;
     });
   });
@@ -1343,7 +1363,7 @@ function openGroup(groupId) {
     '<div style="display:flex;gap:2px" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"><button class="win-btn close-btn" onclick="closeWindow(\''+wid+'\')" ontouchend="event.preventDefault();closeWindow(\''+wid+'\')">✕</button></div></div>' +
     '<div class="menu-bar"><span>File</span><span>Edit</span><span>View</span><span>Help</span></div>' +
     '<div class="address-bar"><button class="win-btn" style="min-width:28px;min-height:20px;font-size:12px;margin-right:4px" onclick="' + backFn + '" ontouchend="event.preventDefault();' + backFn + '">◀</button><span>Address:</span><div class="addr-input">C:\\Scrapbook\\' + group.name + '</div></div>' +
-    '<div class="window-content"><div class="file-grid">' + items + '</div></div>' +
+    '<div class="window-content"><div class="scrap-page"><div class="scrap-head">' + group.name + '</div><div class="scrap-grid">' + items + '</div></div></div>' +
     '<div class="status-bar">' + imgCount + ' image(s)</div></div>';
   document.getElementById('windows').insertAdjacentHTML('beforeend', h);
   openWindows[wid] = { type: 'folder', name: group.name }; bringToFront(wid); updateTaskbar();
@@ -1448,9 +1468,9 @@ function openVideosFolder() {
   var wid = 'win-videos';
   if (openWindows[wid]) { bringToFront(wid); return; }
   var sz = getWindowSize('folder'); var items = '';
-  VIDEOS.forEach(function(v) {
-    items += '<div class="file-item" ondblclick="openVideo(\'' + v.id + '\')" ontouchend="event.preventDefault();openVideo(\'' + v.id + '\')">' +
-      '<div class="thumb" style="background:#000;display:flex;align-items:center;justify-content:center;">' + videoSVG + '</div><div class="file-label">' + v.name + '</div></div>';
+  VIDEOS.forEach(function(v, i) {
+    items += '<div class="scrap-photo" style="transform:rotate(' + scrapRot(i) + 'deg)" ondblclick="openVideo(\'' + v.id + '\')" ontouchend="event.preventDefault();openVideo(\'' + v.id + '\')">' + scrapTape(i) +
+      '<div class="scrap-cover-vid">' + scrapPlaySVG + '</div><div class="cap">' + v.name + '</div></div>';
   });
   var backFn = "goBack('" + wid + "','openScrapbook',[])";
   var h = '<div class="window" id="' + wid + '" style="left:'+sz.x+'px;top:'+sz.y+'px;width:'+sz.w+'px;height:'+sz.h+'px;z-index:'+(++zCounter)+'" onmousedown="bringToFront(\''+wid+'\')">' +
@@ -1459,7 +1479,7 @@ function openVideosFolder() {
     '<div style="display:flex;gap:2px" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"><button class="win-btn close-btn" onclick="closeWindow(\''+wid+'\')" ontouchend="event.preventDefault();closeWindow(\''+wid+'\')">✕</button></div></div>' +
     '<div class="menu-bar"><span>File</span><span>Edit</span><span>View</span><span>Help</span></div>' +
     '<div class="address-bar"><button class="win-btn" style="min-width:28px;min-height:20px;font-size:12px;margin-right:4px" onclick="' + backFn + '" ontouchend="event.preventDefault();' + backFn + '">◀</button><span>Address:</span><div class="addr-input">C:\\Scrapbook\\Videos</div></div>' +
-    '<div class="window-content"><div class="file-grid">' + items + '</div></div>' +
+    '<div class="window-content"><div class="scrap-page"><div class="scrap-head">Videos</div><div class="scrap-grid">' + items + '</div></div></div>' +
     '<div class="status-bar">' + VIDEOS.length + ' video(s)</div></div>';
   document.getElementById('windows').insertAdjacentHTML('beforeend', h);
   openWindows[wid] = { type: 'folder', name: 'Videos' }; bringToFront(wid); updateTaskbar();

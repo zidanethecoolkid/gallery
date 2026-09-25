@@ -1708,5 +1708,11 @@ document.body.addEventListener('mousedown', function(e) { if (!e.target.closest(
 window.addEventListener('resize', function() { if (isMobile()) { document.querySelectorAll('.window').forEach(function(w) { if (w.id === 'win-scrapbook' || w.id.indexOf('win-grp-')===0 || w.id === 'win-videos') { var sz=getWindowSize('folder'); w.style.left=sz.x+'px'; w.style.top=sz.y+'px'; w.style.width=sz.w+'px'; w.style.height=sz.h+'px'; } } ); } });
 document.addEventListener('click', function playOnce() { var d=document.getElementById('bgVideoDesktop'); var m=document.getElementById('bgVideoMobile'); if (d) d.play().catch(function(){}); if (m) m.play().catch(function(){}); document.removeEventListener('click', playOnce); });
 </script>
+<script>
+  window.va = window.va || function () { 
+    (window.vaq = window.vaq || []).push(arguments); 
+  };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
